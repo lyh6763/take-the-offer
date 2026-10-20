@@ -1,0 +1,37 @@
+/* TAKE THE OFFER — 디자인 토큰
+   빨강·검정·흰색 세 색이 주인공. 빨강 바탕 위 글자는 흰색만(대비 5.0:1).
+   어두운 바탕 위 작은 빨간 글씨는 --red-text(6.4:1)를 쓴다. */
+:root {
+  --red: #d7191c;
+  --red-text: #ff5a5f;
+  --red-deep: #a80d10;
+  --black: #0d0d0d;
+  --ink: #161616;
+  --white: #fafafa;
+  --paper: #efe6d2;
+  --yellow: #f4d23c;
+  --grey: #8f8f8f;
+
+  --font-display: 'Black Han Sans', 'Anton', system-ui, sans-serif;
+  --font-latin: 'Anton', 'Black Han Sans', Impact, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', 'Noto Sans KR', system-ui, sans-serif;
+
+  --tilt: -3deg;
+  --slash: polygon(0 6%, 100% 0, 97% 100%, 2% 94%);
+  --slash-alt: polygon(3% 0, 100% 8%, 98% 92%, 0 100%);
+
+  --ease-snap: cubic-bezier(0.2, 1.4, 0.4, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --hud-h: 64px;
+
+  color-scheme: dark;
+}
+
+/* 좁은 화면의 HUD는 로고와 메뉴가 두 줄이라 88px이다 (components.css .hud) */
+@media (max-width: 720px) {
+  :root {
+    --hud-h: 88px;
+  }
+}
