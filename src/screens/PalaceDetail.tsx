@@ -38,18 +38,39 @@ function PalaceEditor({ company, answers }: { company: Company; answers: AnswerR
   const [questionInput, setQuestionInput] = useState('');
   const [status, setStatus] = useState('');
   const deleteRef = useRef<HTMLDialogElement>(null);
+  // 아직 저장하지 않은 입력. 기다리는 동안 화면을 떠나도 잃지 않게 따로 들고 있는다.
+  const pendingRef = useRef<CompanyDraft | null>(null);
 
   // 입력이 멈추면 저장한다 (저장 버튼 없이 잃어버리지 않게). 저장된 값과 같으면 아무것도 하지 않는다.
   useEffect(() => {
     // 이름을 비우면 원래 이름을 유지한다.
     const next = { ...draft, name: draft.name.trim() || company.name };
-    if (JSON.stringify(draftOf(company)) === JSON.stringify(next)) return;
+    if (JSON.stringify(draftOf(company)) === JSON.stringify(next)) {
+      pendingRef.current = null;
+      return;
+    }
+    pendingRef.current = next;
     const timer = window.setTimeout(() => {
+      pendingRef.current = null;
       updateCompany(company.id, next);
       setStatus('자동 저장됨');
     }, 400);
     return () => window.clearTimeout(timer);
   }, [draft, company]);
+
+  // 기다리던 저장은 다른 화면으로 옮기거나 탭을 닫을 때 바로 한다.
+  useEffect(() => {
+    const flush = () => {
+      if (!pendingRef.current) return;
+      updateCompany(company.id, pendingRef.current);
+      pendingRef.current = null;
+    };
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, [company.id]);
 
   const set = <K extends keyof CompanyDraft>(key: K, value: CompanyDraft[K]) => {
     setStatus('');

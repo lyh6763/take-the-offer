@@ -1,5 +1,5 @@
 import { addStats, emptyStats, expForAnswer, rankUps } from '../lib/stats';
-import { createId, getState, initialState, normalize, setState } from './store';
+import { createId, getState, initialState, isExport, normalize, setState } from './store';
 import type { AnswerRecord, Company, Settings, StatKey, Stats } from './types';
 
 export type CompanyDraft = Omit<Company, 'id' | 'createdAt' | 'cardSentAt'>;
@@ -78,8 +78,11 @@ export function exportData() {
   return JSON.stringify(getState(), null, 2);
 }
 
+/** 내보낸 파일이 아니면 던진다(설정 화면이 안내문을 띄운다). 개별 필드가 어긋난 것은 normalize가 고친다. */
 export function importData(json: string) {
-  setState(() => normalize(JSON.parse(json)));
+  const parsed: unknown = JSON.parse(json);
+  if (!isExport(parsed)) throw new Error('not an export file');
+  setState(() => normalize(parsed));
 }
 
 export function resetData() {
