@@ -65,6 +65,7 @@ export function recordSession(records: Omit<AnswerRecord, 'id'>[]) {
   setState((state) => ({
     ...state,
     answers: [...state.answers, ...records.map((record) => ({ ...record, id: createId() }))],
+    interviewDraft: state.interviewDraft?.sessionId === records[0]?.sessionId ? null : state.interviewDraft,
     exp: after,
   }));
   return { before, after, gained, ups: rankUps(before, after) };

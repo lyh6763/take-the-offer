@@ -72,7 +72,8 @@ type ListenHandlers = {
   /** 확정된 문장 + 아직 확정 안 된 문장 */
   onText: (finalText: string, interimText: string) => void;
   onError: (message: string) => void;
-  onEnd: () => void;
+  /** 수동·오류 종료 모두 아직 확정되지 않은 마지막 문장까지 돌려준다. */
+  onEnd: (transcript: string) => void;
 };
 
 const ERROR_MESSAGE: Record<string, string> = {
@@ -83,7 +84,7 @@ const ERROR_MESSAGE: Record<string, string> = {
 };
 
 /**
- * 답변을 듣는다. 브라우저가 잠깐 조용하면 스스로 끝내는 경우가 있어, stop()을 부르기 전에는 다시 시작한다.
+ * 답변을 듣는다. 조용해서 끝난 경우에는 이어 듣고, 오류나 수동 종료 때는 마지막 결과를 보존한다.
  */
 export function listen(handlers: ListenHandlers): Listener | null {
   const Constructor = recognitionConstructor();
@@ -94,44 +95,91 @@ export function listen(handlers: ListenHandlers): Listener | null {
   recognition.continuous = true;
   recognition.interimResults = true;
 
+  let committedText = '';
   let finalText = '';
+  let interimText = '';
   let stopped = false;
+  let ended = false;
+  let endTimer: number | undefined;
+
+  const transcript = () => [committedText, finalText, interimText].filter(Boolean).join(' ').trim();
+  const detach = () => {
+    recognition.onresult = null;
+    recognition.onerror = null;
+    recognition.onend = null;
+  };
+  const finish = () => {
+    if (ended) return;
+    ended = true;
+    window.clearTimeout(endTimer);
+    detach();
+    // 종료 이벤트가 누락된 브라우저에서도 마이크를 남겨 두지 않는다.
+    try { recognition.abort(); } catch { /* 이미 끝난 경우 */ }
+    handlers.onEnd(transcript());
+  };
+  const waitForEnd = () => {
+    if (endTimer === undefined) endTimer = window.setTimeout(finish, 1500);
+  };
 
   recognition.onresult = (event) => {
-    let interim = '';
-    for (let index = event.resultIndex; index < event.results.length; index++) {
+    if (ended) return;
+    const finalParts: string[] = [];
+    const interimParts: string[] = [];
+    // 갱신된 결과 목록 전체로 다시 만든다. 같은 확정 결과를 중복해서 더하지 않는다.
+    for (let index = 0; index < event.results.length; index++) {
       const result = event.results[index];
-      if (result.isFinal) finalText += `${result[0].transcript} `;
-      else interim += result[0].transcript;
+      if (!result.length) continue;
+      (result.isFinal ? finalParts : interimParts).push(result[0].transcript.trim());
     }
-    handlers.onText(finalText.trim(), interim.trim());
+    finalText = finalParts.filter(Boolean).join(' ');
+    interimText = interimParts.filter(Boolean).join(' ');
+    handlers.onText([committedText, finalText].filter(Boolean).join(' '), interimText);
   };
   recognition.onerror = (event) => {
-    if (event.error === 'aborted') return;
-    if (event.error !== 'no-speech') stopped = true;
+    if (ended) return;
+    stopped = true;
     handlers.onError(ERROR_MESSAGE[event.error] ?? `음성 인식 오류 (${event.error})`);
+    waitForEnd();
   };
   recognition.onend = () => {
+    if (ended) return;
     if (!stopped) {
+      committedText = transcript();
+      finalText = '';
+      interimText = '';
+      handlers.onText(committedText, '');
       try {
         recognition.start();
         return;
       } catch {
-        // 다시 시작할 수 없으면 끝낸다.
+        handlers.onError('음성 인식을 이어갈 수 없습니다. 보존된 문장을 확인하거나 다시 녹음해 주세요.');
       }
     }
-    handlers.onEnd();
+    finish();
   };
 
-  recognition.start();
+  try {
+    recognition.start();
+  } catch {
+    handlers.onError('녹음을 시작하지 못했습니다. 마이크 권한을 확인하거나 직접 입력으로 답해 주세요.');
+    finish();
+  }
   return {
     stop: () => {
+      if (ended || stopped) return;
       stopped = true;
-      recognition.stop();
+      waitForEnd();
+      // stop 뒤에 오는 최종 결과를 받은 후 onEnd에서 확정한다.
+      try { recognition.stop(); } catch { finish(); }
     },
     abort: () => {
+      if (ended) return;
       stopped = true;
-      recognition.abort();
+      ended = true;
+      window.clearTimeout(endTimer);
+      detach();
+      // 화면을 떠난 뒤 늦게 도착한 콜백이 새 답변을 덮어쓰지 않게 한다.
+      try { recognition.abort(); } catch { /* 이미 끝난 경우 */ }
     },
   };
 }

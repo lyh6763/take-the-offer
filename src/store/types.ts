@@ -55,6 +55,26 @@ export type AnswerRecord = {
   createdAt: number;
 };
 
+export type InterviewTurn = {
+  question: { text: string; category: Category };
+  transcript: string;
+  mode: AnswerRecord['mode'];
+  analysis: Analysis;
+};
+
+/** 완료 기록과 경험치에 반영하기 전까지 보관하는 면접 초안. */
+export type InterviewDraft = {
+  sessionId: string;
+  companyId: string | null;
+  phase: 'question' | 'review';
+  questions: InterviewTurn['question'][];
+  index: number;
+  turns: InterviewTurn[];
+  mode: AnswerRecord['mode'];
+  answer: string;
+  duration: number;
+};
+
 export type StatKey = 'knowledge' | 'guts' | 'eloquence' | 'attitude' | 'charm';
 
 export type Stats = Record<StatKey, number>;
@@ -72,6 +92,7 @@ export type State = {
   version: 1;
   companies: Company[];
   answers: AnswerRecord[];
+  interviewDraft: InterviewDraft | null;
   /** 능력치별 누적 경험치 */
   exp: Stats;
   /** 한 번만 주는 보너스를 이미 받았는지 */

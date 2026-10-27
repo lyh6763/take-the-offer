@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
 import { CutIn } from '../components/CutIn';
 import { Interviewer } from '../components/Interviewer';
@@ -9,11 +9,11 @@ import { gradeOf } from '../lib/palace';
 import { listen, RECOGNITION_NOTICE, speak, speechSupport, stopSpeaking, type Listener } from '../lib/speech';
 import { navigate } from '../router';
 import { recordSession } from '../store/actions';
-import { createId, useStore } from '../store/store';
-import { CATEGORY_LABEL, type Analysis, type Category } from '../store/types';
+import { createId, getState, setState, useStore } from '../store/store';
+import { CATEGORY_LABEL, type Category, type InterviewDraft, type InterviewTurn } from '../store/types';
 
 type Kind = Category | 'mixed';
-type Turn = { question: Question; transcript: string; mode: 'voice' | 'text'; analysis: Analysis };
+type Turn = InterviewTurn;
 type CutInState = { tone: 'attack' | 'weak'; title: string; subtitle?: string; then: () => void } | null;
 
 const KIND_LABEL: Record<Kind, string> = { mixed: '섞어서', ...CATEGORY_LABEL };
@@ -27,36 +27,79 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
   const companies = useStore((state) => state.companies);
   const settings = useStore((state) => state.settings);
   const voiceAvailable = speechSupport.recognition && settings.microphone;
+  const [savedDraft] = useState(() => getState().interviewDraft);
+  const [resumed, setResumed] = useState(Boolean(savedDraft));
 
-  const [targetId, setTargetId] = useState(companyId ?? '');
+  const [targetId, setTargetId] = useState(savedDraft ? savedDraft.companyId ?? '' : companyId ?? '');
   const target = companies.find((company) => company.id === targetId) ?? null;
   const [kind, setKind] = useState<Kind>(companyId ? 'company' : 'mixed');
-  const [count, setCount] = useState(3);
-  const [mode, setMode] = useState<'voice' | 'text'>(voiceAvailable ? 'voice' : 'text');
-  const [readAloud, setReadAloud] = useState(settings.voice && speechSupport.synthesis);
+  const [count, setCount] = useState(savedDraft?.questions.length ?? 3);
+  const [mode, setMode] = useState<'voice' | 'text'>(savedDraft?.mode === 'text' || !voiceAvailable ? 'text' : 'voice');
+  const [readAloud, setReadAloud] = useState(!savedDraft && settings.voice && speechSupport.synthesis);
 
-  const [phase, setPhase] = useState<'setup' | 'question' | 'review'>('setup');
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [index, setIndex] = useState(0);
-  const [turns, setTurns] = useState<Turn[]>([]);
+  const [phase, setPhase] = useState<'setup' | 'question' | 'review'>(savedDraft?.phase ?? 'setup');
+  const [questions, setQuestions] = useState<Question[]>(savedDraft?.questions ?? []);
+  const [index, setIndex] = useState(savedDraft?.index ?? 0);
+  const [turns, setTurns] = useState<Turn[]>(savedDraft?.turns ?? []);
   const [speaking, setSpeaking] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [interim, setInterim] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [duration, setDuration] = useState(0);
-  const [status, setStatus] = useState('');
+  const [answer, setAnswer] = useState(savedDraft?.answer ?? '');
+  const [duration, setDuration] = useState(savedDraft?.duration ?? 0);
+  const [status, setStatus] = useState(savedDraft ? '임시 저장된 면접을 이어갑니다. 녹음은 자동으로 다시 시작하지 않습니다.' : '');
   const [error, setError] = useState('');
   const [cutIn, setCutIn] = useState<CutInState>(null);
 
-  const sessionId = useRef(createId());
+  const sessionId = useRef(savedDraft?.sessionId ?? createId());
   const listener = useRef<Listener | null>(null);
   const startedAt = useRef(0);
+  const stoppedAt = useRef(0);
+  const completed = useRef(false);
+  const pendingDraft = useRef<InterviewDraft | null>(savedDraft);
+  const saveTimer = useRef<number | undefined>(undefined);
   const questionRef = useRef<HTMLHeadingElement>(null);
   // 낭독할 때마다 1씩 올린다. 끝난 낭독이 새로 시작한 낭독의 상태를 지우지 않게 번호를 비교한다.
   const readingRun = useRef(0);
   const current = questions[index];
   const lastTurn = turns[turns.length - 1];
+
+  const flushDraft = () => {
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = undefined;
+    const draft = pendingDraft.current;
+    if (!completed.current && draft) setState((state) => ({ ...state, interviewDraft: draft }));
+  };
+
+  // 연속 입력·녹음 중에도 400ms 간격으로 저장하고, 화면을 떠날 때 남은 변경을 즉시 반영한다.
+  useLayoutEffect(() => {
+    pendingDraft.current = phase === 'setup' || completed.current ? null : {
+      sessionId: sessionId.current,
+      companyId: targetId || null,
+      phase,
+      questions,
+      index,
+      turns,
+      mode,
+      answer: [answer, interim].filter(Boolean).join(' '),
+      duration: recording ? elapsed : duration,
+    };
+    if (pendingDraft.current && saveTimer.current === undefined) {
+      saveTimer.current = window.setTimeout(flushDraft, 400);
+    }
+  }, [phase, targetId, questions, index, turns, mode, answer, interim, recording, elapsed, duration]);
+
+  useLayoutEffect(() => {
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flushDraft(); };
+    window.addEventListener('pagehide', flushDraft);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', flushDraft);
+      document.removeEventListener('visibilitychange', onVisibility);
+      flushDraft();
+    };
+  }, []);
 
   const readQuestion = (text: string) => {
     const run = ++readingRun.current;
@@ -109,6 +152,8 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
   const start = (event: FormEvent) => {
     event.preventDefault();
     const drawn = drawQuestions(kind, count, target);
+    completed.current = false;
+    setResumed(false);
     sessionId.current = createId();
     setQuestions(drawn);
     setTurns([]);
@@ -126,47 +171,61 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
   };
 
   const startRecording = () => {
+    if (recording || cutIn || phase !== 'question') return;
     stopReading();
     resetAnswer();
+    startedAt.current = Date.now();
+    stoppedAt.current = 0;
+    setStopping(false);
+    setRecording(true);
+    setStatus('녹음을 시작했습니다. 답변을 말한 뒤 "답변 끝"을 누르세요.');
+    let ended = false;
     const handle = listen({
       onText: (finalText, interimText) => {
         setAnswer(finalText);
         setInterim(interimText);
       },
-      onError: (message) => setError(message),
-      onEnd: () => {
+      onError: (message) => {
+        if (!stoppedAt.current) stoppedAt.current = Date.now();
+        setStopping(true);
+        setError(message);
+      },
+      onEnd: (transcript) => {
+        ended = true;
+        listener.current = null;
+        setAnswer(transcript);
+        setDuration(Math.max(0, ((stoppedAt.current || Date.now()) - startedAt.current) / 1000));
         setRecording(false);
+        setStopping(false);
         setInterim('');
+        setStatus('녹음이 끝났습니다. 보존된 문장을 확인하고 고친 뒤 판정을 받으세요.');
       },
     });
     if (!handle) {
       setError('이 브라우저는 음성 인식을 지원하지 않습니다. 직접 입력으로 답해 주세요.');
       setMode('text');
+      setRecording(false);
       return;
     }
-    listener.current = handle;
-    startedAt.current = Date.now();
-    setRecording(true);
-    setStatus('녹음을 시작했습니다. 답변을 말한 뒤 "답변 끝"을 누르세요.');
+    if (!ended) listener.current = handle;
   };
 
   const stopRecording = () => {
+    if (!listener.current || stopping) return;
+    stoppedAt.current = Date.now();
+    setStopping(true);
+    setStatus('마지막 인식 결과를 정리하고 있습니다.');
     listener.current?.stop();
-    listener.current = null;
-    setRecording(false);
-    setDuration((Date.now() - startedAt.current) / 1000);
-    setAnswer((value) => [value, interim].filter(Boolean).join(' '));
-    setInterim('');
-    setStatus('녹음을 마쳤습니다. 인식된 문장을 고친 뒤 판정을 받으세요.');
   };
 
   const judge = () => {
-    if (!current) return;
+    if (!current || recording || cutIn || phase !== 'question' || !answer.trim()) return;
     const analysis = analyzeAnswer(answer, mode === 'voice' ? duration : 0);
     const turn: Turn = { question: current, transcript: answer.trim(), mode, analysis };
     setTurns((list) => [...list, turn]);
+    // 연출 중 이탈해도 이미 판정한 답변은 복원 후 다시 채점하지 않는다.
+    setPhase('review');
     const showReview = () => {
-      setPhase('review');
       setStatus(`판정: ${analysis.score}점, ${gradeOf(analysis.score)}등급.`);
     };
     if (analysis.score >= 85) {
@@ -179,6 +238,7 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
   };
 
   const next = () => {
+    if (recording || cutIn || completed.current) return;
     if (index + 1 < questions.length) {
       setIndex(index + 1);
       resetAnswer();
@@ -189,8 +249,14 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
   };
 
   const finish = () => {
+    if (completed.current) return;
+    completed.current = true;
+    pendingDraft.current = null;
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = undefined;
     // 모두 건너뛰었으면 기록할 것이 없으니 설정 화면으로 돌아간다.
     if (!turns.length) {
+      setState((state) => ({ ...state, interviewDraft: null }));
       setPhase('setup');
       return;
     }
@@ -287,6 +353,7 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
 
   return (
     <div className="infiltrate infiltrate--live">
+      <p className="field__hint">{resumed ? '임시 저장된 면접을 이어갑니다. ' : ''}진행 내용은 이 기기에 임시 저장됩니다. 다른 화면에 다녀오거나 새로고침해도 이어갈 수 있습니다.</p>
       <p className="infiltrate__progress">
         <span className="infiltrate__count">
           QUESTION {index + 1}
@@ -331,8 +398,8 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
                   {answer ? '다시 녹음' : '답변 시작'}
                 </button>
               ) : (
-                <button type="button" className="p-btn p-btn--hero p-btn--danger" onClick={stopRecording}>
-                  답변 끝
+                <button type="button" className="p-btn p-btn--hero p-btn--danger" onClick={stopRecording} disabled={stopping}>
+                  {stopping ? '인식 마무리 중…' : '답변 끝'}
                 </button>
               )}
               {recording && (

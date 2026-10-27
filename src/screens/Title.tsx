@@ -26,9 +26,7 @@ export function TitleScreen() {
           작전 개시
         </button>
       </div>
-      <p className="title-screen__note">
-        페르소나 5의 스타일에서 영감을 받은 팬 스타일 작업이며 ATLUS·SEGA와 관계없습니다. 기록은 이 브라우저에만 저장됩니다.
-      </p>
+      <p className="title-screen__note">기록은 이 브라우저에만 저장됩니다.</p>
     </div>
   );
 }
