@@ -116,18 +116,27 @@ export function isExport(value: unknown): boolean {
 }
 
 let state: State = typeof localStorage === 'undefined' ? initialState : load();
+let saveFailed = false;
 const listeners = new Set<() => void>();
 
 export function getState() {
   return state;
 }
 
+/** 마지막 저장이 실패했는지. 다음 저장이 성공하면 다시 false가 된다. */
+export function getSaveFailed() {
+  return saveFailed;
+}
+
 export function setState(update: (current: State) => State) {
   state = update(state);
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    saveFailed = false;
   } catch {
     // 저장 공간이 없거나 막혀 있어도 이번 방문 동안은 메모리에서 계속 동작한다.
+    // 새로고침하면 사라지므로 화면에 알린다(SaveAlert).
+    saveFailed = true;
   }
   listeners.forEach((listener) => listener());
 }
@@ -140,6 +149,10 @@ function subscribe(listener: () => void) {
 /** 상태의 일부만 구독한다. selector가 같은 값을 돌려주면 다시 그리지 않는다. */
 export function useStore<T>(selector: (current: State) => T): T {
   return useSyncExternalStore(subscribe, () => selector(state), () => selector(initialState));
+}
+
+export function useSaveFailed(): boolean {
+  return useSyncExternalStore(subscribe, getSaveFailed, () => false);
 }
 
 export function createId() {

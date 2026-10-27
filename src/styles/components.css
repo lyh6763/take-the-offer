@@ -419,6 +419,48 @@
   font-weight: 700;
 }
 
+/* ---------- 저장 실패 알림 (HUD 바로 아래 빨간 띠, 빨강 위 글자는 흰색만) ---------- */
+.save-alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 14px var(--gutter);
+  background: var(--red);
+  color: var(--white);
+  border-bottom: 3px solid var(--black);
+}
+
+.save-alert__text {
+  margin: 0;
+  max-width: 60em;
+  line-height: 1.6;
+}
+
+.save-alert__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.save-alert__link,
+.save-alert__close {
+  padding: 8px 14px;
+  border: 2px solid var(--white);
+  background: none;
+  color: var(--white);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.save-alert__link {
+  background: var(--white);
+  color: var(--black);
+}
+
 /* ---------- 칩·태그·디데이·등급·막대 ---------- */
 .chips {
   display: flex;

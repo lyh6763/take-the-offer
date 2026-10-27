@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { Hud } from './components/Hud';
+import { SaveAlert } from './components/SaveAlert';
 import { syncMotionAttribute } from './lib/motion';
 import { useRoute, type RouteName } from './router';
 import { CallingCardScreen } from './screens/CallingCard';
@@ -82,6 +83,7 @@ export function App() {
         본문 바로가기
       </a>
       {route.name !== 'title' && <Hud current={route.name} />}
+      <SaveAlert />
       <main id="main" ref={mainRef} tabIndex={-1} className={`screen screen--${route.name}`}>
         {screen}
       </main>

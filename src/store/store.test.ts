@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { exportData, importData, resetData } from './actions';
-import { getState, initialState, isExport, normalize } from './store';
+import { exportData, importData, resetData, updateSettings } from './actions';
+import { getSaveFailed, getState, initialState, isExport, normalize } from './store';
 
 // 테스트 환경(node)에는 localStorage가 없어서 상태는 메모리에만 남는다.
 const exported = (patch: Record<string, unknown>) => JSON.stringify({ ...JSON.parse(exportData()), ...patch });
@@ -57,5 +57,34 @@ describe('기록 가져오기', () => {
 
   it('JSON이 아니면 던진다', () => {
     expect(() => importData('not json')).toThrow();
+  });
+});
+
+describe('저장 실패 알림', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('저장이 실패하면 표시하고, 기록은 이번 방문 동안 메모리에 남는다', () => {
+    vi.stubGlobal('localStorage', {
+      setItem: () => {
+        throw new Error('QuotaExceededError');
+      },
+    });
+    updateSettings({ voice: false });
+    expect(getSaveFailed()).toBe(true);
+    expect(getState().settings.voice).toBe(false);
+  });
+
+  it('다음 저장이 성공하면 표시를 푼다', () => {
+    vi.stubGlobal('localStorage', {
+      setItem: () => {
+        throw new Error('QuotaExceededError');
+      },
+    });
+    updateSettings({ voice: false });
+    const saved = new Map<string, string>();
+    vi.stubGlobal('localStorage', { setItem: (key: string, value: string) => saved.set(key, value) });
+    updateSettings({ voice: true });
+    expect(getSaveFailed()).toBe(false);
+    expect(saved.size).toBe(1);
   });
 });

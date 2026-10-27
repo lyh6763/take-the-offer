@@ -33,6 +33,10 @@ export const speechSupport = {
   recognition: recognitionConstructor() !== null,
 };
 
+/** 말로 답하기를 고르는 곳(설정·잠입)마다 같은 문장으로 알린다. */
+export const RECOGNITION_NOTICE =
+  '말로 답하면 브라우저의 음성 인식이 소리를 글자로 바꿉니다. Chrome·Edge 등 많은 브라우저는 이때 소리를 브라우저 제조사의 서버로 보냅니다. 바뀐 글자와 답변 기록은 이 기기에만 저장됩니다.';
+
 function koreanVoice() {
   const voices = window.speechSynthesis.getVoices();
   return voices.find((voice) => voice.lang === 'ko-KR') ?? voices.find((voice) => voice.lang.startsWith('ko')) ?? null;

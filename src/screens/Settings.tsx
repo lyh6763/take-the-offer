@@ -1,7 +1,7 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 
 import { SlashTitle } from '../components/SlashTitle';
-import { speak, speechSupport } from '../lib/speech';
+import { RECOGNITION_NOTICE, speak, speechSupport } from '../lib/speech';
 import { exportData, importData, resetData, updateSettings } from '../store/actions';
 import { useStore } from '../store/store';
 import type { MotionPref } from '../store/types';
@@ -82,6 +82,7 @@ export function SettingsScreen() {
             <input type="checkbox" checked={settings.microphone} disabled={!speechSupport.recognition} onChange={(event) => updateSettings({ microphone: event.target.checked })} />
             <span>말로 답하기(마이크) 사용</span>
           </label>
+          {speechSupport.recognition && <p className="field__hint">{RECOGNITION_NOTICE}</p>}
           {!speechSupport.synthesis && <p className="field__hint">이 브라우저는 음성 합성을 지원하지 않습니다.</p>}
           {!speechSupport.recognition && <p className="field__hint">이 브라우저는 음성 인식을 지원하지 않습니다. 잠입에서는 직접 입력으로 답합니다.</p>}
         </section>

@@ -6,7 +6,7 @@ import { SlashTitle } from '../components/SlashTitle';
 import { drawQuestions, type Question } from '../data/questions';
 import { ALL_OUT_THRESHOLD, analyzeAnswer } from '../lib/analysis';
 import { gradeOf } from '../lib/palace';
-import { listen, speak, speechSupport, stopSpeaking, type Listener } from '../lib/speech';
+import { listen, RECOGNITION_NOTICE, speak, speechSupport, stopSpeaking, type Listener } from '../lib/speech';
 import { navigate } from '../router';
 import { recordSession } from '../store/actions';
 import { createId, useStore } from '../store/store';
@@ -267,13 +267,16 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
               <input type="radio" name="mode" checked={mode === 'text'} onChange={() => setMode('text')} />
               <span>직접 입력</span>
             </label>
-            {!speechSupport.recognition && <p className="field__hint">이 브라우저는 음성 인식을 지원하지 않습니다 (Chrome·Edge·Safari에서 가능).</p>}
+            {speechSupport.recognition ? (
+              <p className="field__hint">{RECOGNITION_NOTICE}</p>
+            ) : (
+              <p className="field__hint">이 브라우저는 음성 인식을 지원하지 않습니다 (Chrome·Edge·Safari에서 가능).</p>
+            )}
           </fieldset>
           <label className="choice choice--check">
             <input type="checkbox" checked={readAloud} disabled={!speechSupport.synthesis} onChange={(event) => setReadAloud(event.target.checked)} />
             <span>면접관이 질문을 소리 내어 읽기</span>
           </label>
-          <p className="field__hint">음성 인식은 브라우저에 따라 브라우저 제조사의 서버를 거칠 수 있습니다. 답변 기록은 이 기기에만 저장됩니다.</p>
           <button type="submit" className="p-btn p-btn--hero">
             잠입 개시
           </button>
