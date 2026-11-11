@@ -19,15 +19,39 @@ const PATTERNS: [RegExp, RouteName][] = [
   [/^\/settings$/, 'settings'],
 ];
 
-export function parseHash(hash: string): Route {
+/** 맞지 않는 주소일 때 보여 주는 화면의 주소 */
+const FALLBACK_HASH = '#/hideout';
+
+function splitHash(hash: string) {
   const raw = hash.replace(/^#/, '') || '/';
   const [path, search = ''] = raw.split('?');
+  return { path, search };
+}
+
+export function parseHash(hash: string): Route {
+  const { path, search } = splitHash(hash);
   for (const [pattern, name] of PATTERNS) {
     const match = pattern.exec(path);
     if (match) return { name, id: match[1] ?? null, query: new URLSearchParams(search) };
   }
   return { name: 'hideout', id: null, query: new URLSearchParams() };
 }
+
+/** 알려진 화면 주소인지. 아니면 parseHash가 아지트를 돌려준다. */
+export function isKnownHash(hash: string): boolean {
+  const { path } = splitHash(hash);
+  return PATTERNS.some(([pattern]) => pattern.test(path));
+}
+
+/**
+ * 없는 화면 주소(예: #/nope)로 들어오면 화면은 아지트인데 주소창에는 틀린 주소가 남는다.
+ * 보이는 화면과 주소가 맞도록 바꾼다. replaceState라 뒤로 가기 기록은 늘지 않는다.
+ */
+function normalizeUnknownHash() {
+  if (!isKnownHash(location.hash)) history.replaceState(null, '', FALLBACK_HASH);
+}
+
+if (typeof window !== 'undefined') normalizeUnknownHash();
 
 let route = parseHash(typeof location === 'undefined' ? '' : location.hash);
 const listeners = new Set<() => void>();
@@ -60,7 +84,9 @@ export function navigate(to: string, options: { replace?: boolean } = {}) {
 }
 
 if (typeof window !== 'undefined') {
+  // 주소창에서 해시를 직접 고쳐도 popstate가 온다. 그때도 없는 주소면 맞춘다.
   window.addEventListener('popstate', () => {
+    normalizeUnknownHash();
     const next = parseHash(location.hash);
     withTransition(() => flushSync(() => setRoute(next)));
   });
