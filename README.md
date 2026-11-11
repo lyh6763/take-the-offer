@@ -28,13 +28,13 @@
 
 ## 기술
 
-- React 19 + TypeScript + Vite, 해시 라우팅
+- React 19 + TypeScript + Vite, 해시 라우팅. 없는 화면 주소(예: `#/nope`)는 보여 주는 화면에 맞춰 `#/hideout`으로 바꿈([src/router.ts](src/router.ts))
 - 상태: `useSyncExternalStore` 기반 작은 스토어 + localStorage ([src/store](src/store))
 - 화면 전환: View Transitions API로 사선 컷 전환, 모션을 줄이면 즉시 전환
 - 음성: Web Speech API(SpeechSynthesis, SpeechRecognition). 지원하지 않으면 텍스트 입력
 - 예고장: 배치(`layoutRansom`)는 순수 함수, 그리기(`drawRansom`)는 Canvas 2D ([src/lib/ransom.ts](src/lib/ransom.ts))
 - 글꼴: Fontsource 자체 호스팅. UI용 Black Han Sans·Anton만 첫 화면 CSS에 넣고, 예고장용 4종은 필요할 때 별도 CSS로 받음
-- 테스트: Vitest 17개 (답변 분석, 예고장 배치, 능력치 계산)
+- 테스트: Vitest 31개 (답변 분석, 예고장 배치, 능력치 계산, 저장값·가져온 기록 파일 정리, 해시 라우팅)
 
 ## 접근성
 
@@ -63,6 +63,14 @@ OneDrive로 동기화되는 폴더에서는 `npm run build`가 글꼴 파일 수
 ```bash
 npx vite build --outDir ../../take-the-offer-dist
 ```
+
+## 배포
+
+- main에 푸시하면 GitHub Actions가 `npm test` → `npm run build`(타입 검사 포함)를 통과한 뒤 GitHub Pages에 배포합니다. PR에서는 검사만 하고 배포하지 않습니다([.github/workflows/deploy.yml](.github/workflows/deploy.yml)).
+- `public/`의 파일은 빌드 결과에 그대로 복사됩니다.
+  - `og-image.jpg`: 공유 미리보기 이미지. 타이틀 화면을 1200×630, 동작 줄이기 상태로 찍은 것이라 타이틀 화면이 바뀌면 다시 찍습니다.
+  - `apple-touch-icon.png`(180)·`favicon-32.png`: 가면 아이콘
+  - `404.html`: `/take-the-offer/` 아래 잘못된 경로에 GitHub Pages가 보여 주는 안내. 저장소 이름이 바뀌면 안의 절대 경로도 고칩니다.
 
 ## 다음 단계
 
