@@ -27,6 +27,9 @@
         color: var(--color-paper);
         font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
         line-height: 1.6;
+        /* 한국어 낱말 중간에서 줄이 바뀌지 않게 */
+        word-break: keep-all;
+        overflow-wrap: anywhere;
       }
       main { max-width: 32rem; text-align: center; }
       h1 {
