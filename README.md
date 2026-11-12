@@ -35,6 +35,7 @@
 - 예고장: 배치(`layoutRansom`)는 순수 함수, 그리기(`drawRansom`)는 Canvas 2D ([src/lib/ransom.ts](src/lib/ransom.ts))
 - 글꼴: Fontsource 자체 호스팅. UI용 Black Han Sans·Anton만 첫 화면 CSS에 넣고, 예고장용 4종은 필요할 때 별도 CSS로 받음
 - 테스트: Vitest 31개 (답변 분석, 예고장 배치, 능력치 계산, 저장값·가져온 기록 파일 정리, 해시 라우팅)
+- 린트: ESLint 9(typescript-eslint·react-hooks·jsx-a11y recommended, [eslint.config.js](eslint.config.js))와 Stylelint(recommended, [stylelint.config.js](stylelint.config.js)). 경고 0이어야 통과
 
 ## 접근성
 
@@ -53,6 +54,7 @@ npm run dev
 ```
 
 ```bash
+npm run lint
 npm test
 npm run typecheck
 npm run build
@@ -66,7 +68,7 @@ npx vite build --outDir ../../take-the-offer-dist
 
 ## 배포
 
-- main에 푸시하면 GitHub Actions가 `npm test` → `npm run build`(타입 검사 포함)를 통과한 뒤 GitHub Pages에 배포합니다. PR에서는 검사만 하고 배포하지 않습니다([.github/workflows/deploy.yml](.github/workflows/deploy.yml)).
+- main에 푸시하면 GitHub Actions가 `npm run lint` → `npm test` → `npm run build`(타입 검사 포함)를 통과한 뒤 GitHub Pages에 배포합니다. PR에서는 검사만 하고 배포하지 않습니다([.github/workflows/deploy.yml](.github/workflows/deploy.yml)).
 - `public/`의 파일은 빌드 결과에 그대로 복사됩니다.
   - `og-image.jpg`: 공유 미리보기 이미지. 타이틀 화면을 1200×630, 동작 줄이기 상태로 찍은 것이라 타이틀 화면이 바뀌면 다시 찍습니다.
   - `apple-touch-icon.png`(180)·`favicon-32.png`: 가면 아이콘
