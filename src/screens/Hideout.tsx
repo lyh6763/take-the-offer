@@ -1,4 +1,4 @@
-import { useMemo, useRef, type KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent } from 'react';
 
 import { linkHandler } from '../components/Hud';
 import { SlashTitle } from '../components/SlashTitle';
@@ -30,18 +30,16 @@ export function HideoutScreen() {
   const today = new Date();
   const todayKey = toISODate(today);
 
-  const upcoming = useMemo(
-    () =>
-      companies
-        .filter((company) => company.interviewDate && daysUntil(company.interviewDate) >= 0)
-        .sort((a, b) => (a.interviewDate ?? '').localeCompare(b.interviewDate ?? ''))
-        .slice(0, 3),
-    [companies],
-  );
-  const tip = useMemo(() => pick(createRng(hashString(todayKey)), TIPS), [todayKey]);
+  // 회사 몇 곳을 거르는 가벼운 계산이라 메모하지 않는다. 오늘 날짜에 따라 결과가 바뀌기도 한다.
+  const upcoming = companies
+    .filter((company) => company.interviewDate && daysUntil(company.interviewDate) >= 0)
+    .sort((a, b) => (a.interviewDate ?? '').localeCompare(b.interviewDate ?? ''))
+    .slice(0, 3);
+  // 날짜를 씨앗으로 고르므로 같은 날에는 다시 렌더해도 같은 메모가 나온다.
+  const tip = pick(createRng(hashString(todayKey)), TIPS);
 
   // 위아래 방향키로 메뉴를 오간다 (Tab도 그대로 동작).
-  const onMenuKey = (event: KeyboardEvent<HTMLUListElement>) => {
+  const onMenuKey = (event: KeyboardEvent<HTMLAnchorElement>) => {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
     const links = [...(menuRef.current?.querySelectorAll('a') ?? [])];
     const index = links.indexOf(document.activeElement as HTMLAnchorElement);
@@ -79,10 +77,10 @@ export function HideoutScreen() {
       <div className="hideout__menu-area">
         <SlashTitle kicker="HIDEOUT">아지트</SlashTitle>
         <nav aria-label="아지트 메뉴">
-          <ul className="hideout-menu" ref={menuRef} onKeyDown={onMenuKey}>
+          <ul className="hideout-menu" ref={menuRef}>
             {MENU.map((item, index) => (
               <li key={item.to} style={{ ['--i' as string]: index }}>
-                <a href={`#${item.to}`} onClick={linkHandler(item.to)} className="hideout-menu__link">
+                <a href={`#${item.to}`} onClick={linkHandler(item.to)} onKeyDown={onMenuKey} className="hideout-menu__link">
                   <span className="hideout-menu__en" aria-hidden="true">
                     {item.en}
                   </span>
