@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
 import { CutIn } from '../components/CutIn';
 import { Interviewer } from '../components/Interviewer';
@@ -125,11 +125,16 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
   );
 
   // 새 질문이 뜨면 질문으로 포커스를 옮기고, 켜 두었으면 읽어 준다.
+  // 낭독은 브라우저 음성 합성(외부 시스템)을 켜는 일이고 speaking은 그 상태를 화면에 비춘다.
+  const startReading = useEffectEvent((text: string) => readQuestion(text));
   useEffect(() => {
     if (phase !== 'question' || !current) return;
     questionRef.current?.focus();
     if (!readAloud) return;
-    readQuestion(current.text);
+    // 읽기 시작과 '멈추기' 버튼 표시를 같은 순간에 맞추려고 speaking을 여기서 바로 켠다.
+    // 음성 합성의 onstart를 기다리면 버튼이 잠깐 '읽어 주기'로 보였다가 바뀐다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    startReading(current.text);
     return stopReading;
   }, [phase, current, readAloud, settings.voiceRate]);
 

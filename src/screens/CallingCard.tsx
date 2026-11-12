@@ -29,7 +29,8 @@ export function CallingCardScreen({ companyId }: { companyId: string | null }) {
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const [backdrop, setBackdrop] = useState<Backdrop>('red');
   const [seed, setSeed] = useState(1);
-  const [ready, setReady] = useState(false);
+  // 캔버스에 마지막으로 다 그린 조합. 지금 조합과 같을 때만 PNG로 저장할 수 있다.
+  const [drawnKey, setDrawnKey] = useState<string | null>(null);
   const [cutIn, setCutIn] = useState(false);
   const [notice, setNotice] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -45,10 +46,11 @@ export function CallingCardScreen({ companyId }: { companyId: string | null }) {
     [recipient, message],
   );
   const fullText = segments.map((segment) => segment.text).join(' ');
+  const drawKey = [targetId, seed, backdrop, fullText].join('\u0000');
+  const ready = drawnKey === drawKey;
 
   useEffect(() => {
     let cancelled = false;
-    setReady(false);
     loadFonts(fullText).then(() => {
       if (cancelled) return;
       const canvas = canvasRef.current;
@@ -64,12 +66,12 @@ export function CallingCardScreen({ companyId }: { companyId: string | null }) {
       canvas.height = (layout.height + PADDING * 2) * scale;
       context.setTransform(scale, 0, 0, scale, 0, 0);
       drawRansom(context, layout, backdrop, PADDING);
-      setReady(true);
+      setDrawnKey(drawKey);
     });
     return () => {
       cancelled = true;
     };
-  }, [segments, seed, backdrop, fullText, targetId]);
+  }, [segments, seed, backdrop, fullText, targetId, drawKey]);
 
   const download = () => {
     canvasRef.current?.toBlob((blob) => {

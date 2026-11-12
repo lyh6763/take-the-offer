@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useSaveFailed } from '../store/store';
 import { linkHandler } from './Hud';
@@ -12,9 +12,8 @@ export function SaveAlert() {
   const [dismissed, setDismissed] = useState(false);
 
   // 저장이 다시 성공하면 닫은 상태를 풀어, 다음에 또 실패하면 다시 알린다.
-  useEffect(() => {
-    if (!failed) setDismissed(false);
-  }, [failed]);
+  // effect를 거치지 않고 렌더 중에 맞춘다(React가 이 컴포넌트만 곧바로 다시 렌더한다).
+  if (!failed && dismissed) setDismissed(false);
 
   if (!failed || dismissed) return null;
 

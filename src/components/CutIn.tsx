@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef } from 'react';
 
 import { MaskIcon } from './MaskIcon';
 
@@ -18,16 +18,16 @@ type CutInProps = {
  */
 export function CutIn({ title, subtitle, tone, onDone, duration = 1900 }: CutInProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const done = useRef(onDone);
-  done.current = onDone;
+  // 타이머·키 입력은 effect 안에서 걸지만, 부를 때는 그때의 onDone을 쓴다(onDone이 바뀌어도 다시 걸지 않음).
+  const finish = useEffectEvent(() => onDone());
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     ref.current?.focus();
-    const timer = window.setTimeout(() => done.current(), duration);
+    const timer = window.setTimeout(finish, duration);
     const skip = (event: KeyboardEvent) => {
       event.preventDefault();
-      done.current();
+      finish();
     };
     window.addEventListener('keydown', skip);
     return () => {
@@ -38,13 +38,16 @@ export function CutIn({ title, subtitle, tone, onDone, duration = 1900 }: CutInP
   }, [duration]);
 
   return (
+    // 키보드로 건너뛰기는 위 effect의 window keydown(아무 키)이 맡는다. 여기 클릭은 마우스·터치용 같은 동작이다.
+    // 이 div에 키 처리기를 또 달면 한 번 누를 때 onDone이 두 번 불린다.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <div
       ref={ref}
       className={`cutin cutin--${tone}`}
       role="alertdialog"
       aria-label={subtitle ? `${title}. ${subtitle}` : title}
       tabIndex={-1}
-      onClick={() => done.current()}
+      onClick={onDone}
     >
       <div className="cutin__slash cutin__slash--a" aria-hidden="true" />
       <div className="cutin__slash cutin__slash--b" aria-hidden="true" />
