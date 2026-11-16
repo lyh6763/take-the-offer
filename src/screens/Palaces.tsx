@@ -53,7 +53,7 @@ export function PalacesScreen() {
       </div>
 
       {companies.length === 0 ? (
-        <p className="empty-note">아직 발견한 팰리스가 없다. 지원한 회사를 등록해 보자.</p>
+        <p className="empty-note">아직 발견한 팰리스가 없다.</p>
       ) : (
         <ul className="palace-grid">
           {companies.map((company, index) => {
