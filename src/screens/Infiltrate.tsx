@@ -290,7 +290,7 @@ export function InfiltrateScreen({ companyId }: { companyId: string | null }) {
       <div className="infiltrate">
         <div className="screen-head">
           <SlashTitle kicker="INFILTRATE">잠입</SlashTitle>
-          <p className="screen-head__lead">면접관이 질문을 던진다. 말로 답하면 말 속도·군말·구성을 분석하고, 점수가 높으면 총공격이 터진다.</p>
+          <p className="screen-head__lead">면접관이 질문을 던진다. 말로 답하면 말하는 속도와 군말, 답변 구성을 분석한다. 점수가 높으면 총공격이 터진다.</p>
         </div>
         <form className="panel p-form infiltrate__setup" onSubmit={start}>
           <label className="field">

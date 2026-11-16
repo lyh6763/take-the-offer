@@ -27,7 +27,7 @@ export function StatsScreen() {
     <div className="stats">
       <div className="screen-head">
         <SlashTitle kicker="STATS">괴도 능력치</SlashTitle>
-        <p className="screen-head__lead">잠입할수록 오른다. 직무 질문은 지식, 압박 질문은 담력, 인성 질문은 태도, 군말 없는 답변은 말솜씨, 예고장과 회사 맞춤 질문은 매력.</p>
+        <p className="screen-head__lead">잠입할수록 능력치가 오른다. 직무 질문은 지식, 압박 질문은 담력, 인성 질문은 태도를 올린다. 군말 없는 답변은 말솜씨를, 예고장과 회사 맞춤 질문은 매력을 올린다.</p>
       </div>
 
       <div className="stats__layout">

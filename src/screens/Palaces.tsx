@@ -39,7 +39,7 @@ export function PalacesScreen() {
     <div className="palaces">
       <div className="screen-head">
         <SlashTitle kicker="PALACES">팰리스</SlashTitle>
-        <p className="screen-head__lead">지원한 회사마다 면접관의 마음속 팰리스가 있다. 조사하고, 예고장을 보내고, 잠입하자.</p>
+        <p className="screen-head__lead">지원한 회사마다 면접관의 마음속 팰리스가 있다. 조사한 뒤 예고장을 보내고 잠입하자.</p>
         <button
           type="button"
           className="p-btn"
