@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { flushSync } from 'react-dom';
 
 import { linkHandler } from '../components/Hud';
 import { SlashTitle } from '../components/SlashTitle';
@@ -12,6 +13,15 @@ import type { AnswerRecord, Company } from '../store/types';
 function draftOf(company: Company): CompanyDraft {
   const { name, role, interviewDate, keywords, questions, memo } = company;
   return { name, role, interviewDate, keywords, questions, memo };
+}
+
+/**
+ * 항목을 지운 뒤 포커스가 문서 처음으로 풀리지 않게, 같은 자리의 다음 삭제 버튼으로 옮긴다.
+ * 다음이 없으면 이전 버튼, 목록이 비면 추가 입력칸으로 보낸다.
+ */
+function focusAfterRemove(list: HTMLElement | null, index: number, fallback: HTMLElement | null) {
+  const buttons = list ? [...list.querySelectorAll<HTMLButtonElement>('.chip__remove')] : [];
+  (buttons[index] ?? buttons[index - 1] ?? fallback)?.focus();
 }
 
 export function PalaceDetailScreen({ id }: { id: string }) {
@@ -38,6 +48,10 @@ function PalaceEditor({ company, answers }: { company: Company; answers: AnswerR
   const [questionInput, setQuestionInput] = useState('');
   const [status, setStatus] = useState('');
   const deleteRef = useRef<HTMLDialogElement>(null);
+  const keywordListRef = useRef<HTMLUListElement>(null);
+  const keywordInputRef = useRef<HTMLInputElement>(null);
+  const questionListRef = useRef<HTMLOListElement>(null);
+  const questionInputRef = useRef<HTMLInputElement>(null);
   // 아직 저장하지 않은 입력. 기다리는 동안 화면을 떠나도 잃지 않게 따로 들고 있는다.
   const pendingRef = useRef<CompanyDraft | null>(null);
 
@@ -86,6 +100,15 @@ function PalaceEditor({ company, answers }: { company: Company; answers: AnswerR
     const value = questionInput.trim();
     if (value) set('questions', [...draft.questions, value]);
     setQuestionInput('');
+  };
+  // 지운 결과를 바로 그려야 남은 버튼 중 어디로 포커스를 옮길지 알 수 있다.
+  const removeKeyword = (keyword: string, index: number) => {
+    flushSync(() => set('keywords', draft.keywords.filter((item) => item !== keyword)));
+    focusAfterRemove(keywordListRef.current, index, keywordInputRef.current);
+  };
+  const removeQuestion = (index: number) => {
+    flushSync(() => set('questions', draft.questions.filter((_, i) => i !== index)));
+    focusAfterRemove(questionListRef.current, index, questionInputRef.current);
   };
   const onEnter = (action: () => void) => (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
@@ -138,11 +161,11 @@ function PalaceEditor({ company, answers }: { company: Company; answers: AnswerR
           <h2 id="keyword-title" className="panel__title">
             인재상 키워드
           </h2>
-          <ul className="chips" aria-label="등록한 키워드">
-            {draft.keywords.map((keyword) => (
+          <ul className="chips" aria-label="등록한 키워드" ref={keywordListRef}>
+            {draft.keywords.map((keyword, index) => (
               <li key={keyword} className="chip">
                 {keyword}
-                <button type="button" className="chip__remove" onClick={() => set('keywords', draft.keywords.filter((item) => item !== keyword))}>
+                <button type="button" className="chip__remove" onClick={() => removeKeyword(keyword, index)}>
                   <span aria-hidden="true">×</span>
                   <span className="visually-hidden">{keyword} 삭제</span>
                 </button>
@@ -152,7 +175,7 @@ function PalaceEditor({ company, answers }: { company: Company; answers: AnswerR
           <div className="inline-add">
             <label className="field field--grow">
               <span className="field__label">키워드 추가</span>
-              <input value={keywordInput} onChange={(event) => setKeywordInput(event.target.value)} onKeyDown={onEnter(addKeyword)} placeholder="예: 주도성" />
+              <input ref={keywordInputRef} value={keywordInput} onChange={(event) => setKeywordInput(event.target.value)} onKeyDown={onEnter(addKeyword)} placeholder="예: 주도성" />
             </label>
             <button type="button" className="p-btn p-btn--small" onClick={addKeyword}>
               추가
@@ -165,11 +188,11 @@ function PalaceEditor({ company, answers }: { company: Company; answers: AnswerR
             예상 질문
           </h2>
           <p className="panel__hint">여기 적은 질문은 이 회사로 잠입할 때 "회사 맞춤" 질문으로 나온다.</p>
-          <ol className="question-list">
+          <ol className="question-list" ref={questionListRef}>
             {draft.questions.map((question, index) => (
               <li key={`${index}-${question}`}>
                 <span>{question}</span>
-                <button type="button" className="chip__remove" onClick={() => set('questions', draft.questions.filter((_, i) => i !== index))}>
+                <button type="button" className="chip__remove" onClick={() => removeQuestion(index)}>
                   <span aria-hidden="true">×</span>
                   <span className="visually-hidden">질문 {index + 1} 삭제</span>
                 </button>
@@ -179,7 +202,7 @@ function PalaceEditor({ company, answers }: { company: Company; answers: AnswerR
           <div className="inline-add">
             <label className="field field--grow">
               <span className="field__label">질문 추가</span>
-              <input value={questionInput} onChange={(event) => setQuestionInput(event.target.value)} onKeyDown={onEnter(addQuestion)} placeholder="예: 우리 서비스에서 고치고 싶은 화면은?" />
+              <input ref={questionInputRef} value={questionInput} onChange={(event) => setQuestionInput(event.target.value)} onKeyDown={onEnter(addQuestion)} placeholder="예: 우리 서비스에서 고치고 싶은 화면은?" />
             </label>
             <button type="button" className="p-btn p-btn--small" onClick={addQuestion}>
               추가
