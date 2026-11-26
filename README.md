@@ -37,6 +37,13 @@
 - 테스트: Vitest 31개 (답변 분석, 예고장 배치, 능력치 계산, 저장값·가져온 기록 파일 정리, 해시 라우팅)
 - 린트: ESLint 9(typescript-eslint·react-hooks·jsx-a11y recommended, [eslint.config.js](eslint.config.js))와 Stylelint(recommended, [stylelint.config.js](stylelint.config.js)). 경고 0이어야 통과
 
+## 스타일 구조
+
+- `src/styles/tokens.css`: 기존 팔레트·글꼴·여백과 용도별 색 토큰(`--token-*`)을 정의합니다. `base.css`는 기본 요소·배경, `components.css`는 공통 UI, `screens.css`는 화면별 스타일을 맡습니다.
+- 순백색 예고장 종이(`#fff`)와 기존 UI의 흰색(`--white: #fafafa`)처럼 값이 다른 색은 구분합니다. 현재 값이 같아도 비활성 버튼·D등급 배경·차트 선처럼 역할이 다르면 각각의 토큰으로 관리합니다.
+- 반투명 효과는 `rgb(var(--token-effect-red-rgb) / 0.22)`처럼 RGB 채널 토큰을 사용하고, 투명도는 사용처에 둡니다. 효과용 빨강(`229 25 28`)은 기존 강조색(`--red: #d7191c`)과 다릅니다.
+- 색 토큰만 정리할 때는 기존 색상값과 `rgb()` 표기 방식을 유지합니다. 수정 전 기준을 두 번 수집한 뒤 전후 캡처·요소와 가상 요소의 계산된 색·키보드 포커스를 비교합니다.
+
 ## 접근성
 
 - 모든 기능을 키보드로 사용. 화면이 바뀌면 새 화면 제목으로 포커스 이동, 본문 바로가기
