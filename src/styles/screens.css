@@ -116,7 +116,7 @@
   right: var(--gutter);
   bottom: 16px;
   padding: 6px 10px;
-  background: rgb(13 13 13 / 0.85);
+  background: rgb(var(--token-title-note-rgb) / 0.85);
   font-size: 0.82rem;
   text-align: center;
 }
@@ -202,12 +202,12 @@
 .calendar-card__date {
   grid-column: 2;
   font-size: 0.88rem;
-  color: #444;
+  color: var(--token-text-on-light-muted);
 }
 
 .calendar-card__empty {
   font-size: 0.92rem;
-  color: #333;
+  color: var(--token-text-on-light-secondary);
 }
 
 .hideout__menu-area {
@@ -294,7 +294,7 @@
 
 .hideout-menu__note {
   font-weight: 700;
-  color: #d9d9d9;
+  color: var(--token-text-menu-note);
 }
 
 .hideout-menu__link:hover .hideout-menu__note,
@@ -628,7 +628,7 @@
 .recorder__target {
   font-family: var(--font-body);
   font-size: 0.9rem;
-  color: #c9c9c9;
+  color: var(--token-text-hint);
 }
 
 .recorder__live {
@@ -641,7 +641,7 @@
 }
 
 .recorder__interim {
-  color: #9a9a9a;
+  color: var(--token-text-recorder-interim);
 }
 
 .review {
@@ -687,7 +687,7 @@
 
 .review__metrics dt {
   font-size: 0.8rem;
-  color: #c9c9c9;
+  color: var(--token-text-hint);
 }
 
 .review__metrics dd {
@@ -753,7 +753,7 @@
   font-size: clamp(6rem, 22vw, 16rem);
   line-height: 0.8;
   color: transparent;
-  -webkit-text-stroke: 3px rgb(229 25 28 / 0.6);
+  -webkit-text-stroke: 3px rgb(var(--token-effect-red-rgb) / 0.6);
   transform: rotate(-8deg);
   pointer-events: none;
 }
@@ -803,7 +803,7 @@
 
 .result-row__weak {
   font-size: 0.9rem;
-  color: #d0d0d0;
+  color: var(--token-text-result-weakness);
 }
 
 .result-row__score {
@@ -877,16 +877,16 @@
 
 .radar__ring {
   fill: none;
-  stroke: #444;
+  stroke: var(--token-radar-ring);
   stroke-width: 1;
 }
 
 .radar__axis {
-  stroke: #555;
+  stroke: var(--token-radar-axis);
 }
 
 .radar__shape {
-  fill: rgb(229 25 28 / 0.75);
+  fill: rgb(var(--token-effect-red-rgb) / 0.75);
   stroke: var(--white);
   stroke-width: 3;
   stroke-linejoin: round;
@@ -940,12 +940,12 @@
 }
 
 .stat-row .meter {
-  background: #ccc;
+  background: var(--token-meter-track-light);
 }
 
 .stat-row__exp {
   font-size: 0.85rem;
-  color: #333;
+  color: var(--token-text-on-light-secondary);
 }
 
 .trend {

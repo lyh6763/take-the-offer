@@ -171,8 +171,8 @@
 }
 
 .p-btn:disabled {
-  background: #3a3a3a;
-  color: #b8b8b8;
+  background: var(--token-surface-disabled);
+  color: var(--token-text-disabled);
   cursor: not-allowed;
   transform: none;
 }
@@ -235,7 +235,7 @@
   display: inline-block;
   padding: 0.04em 0.16em 0.08em;
   line-height: 1.1;
-  box-shadow: 0.06em 0.08em 0 rgb(0 0 0 / 0.45);
+  box-shadow: 0.06em 0.08em 0 rgb(var(--token-shadow-rgb) / 0.45);
   animation: piece-drop 420ms var(--ease-snap) both;
 }
 
@@ -247,12 +247,12 @@
   }
 }
 
-.paper-white { background: #fff; color: #111; }
-.paper-black { background: #111; color: #fff; }
-.paper-red { background: var(--red); color: #fff; }
-.paper-news { background: var(--paper); color: #1a1a1a; }
-.paper-yellow { background: var(--yellow); color: #111; }
-.paper-white-red { background: #fff; color: var(--red-deep); }
+.paper-white { background: var(--token-ransom-paper); color: var(--token-ransom-ink); }
+.paper-black { background: var(--token-ransom-ink); color: var(--token-ransom-paper); }
+.paper-red { background: var(--red); color: var(--token-ransom-paper); }
+.paper-news { background: var(--paper); color: var(--token-ransom-news-ink); }
+.paper-yellow { background: var(--yellow); color: var(--token-ransom-ink); }
+.paper-white-red { background: var(--token-ransom-paper); color: var(--red-deep); }
 
 .face-hanbit { font-family: 'Black Han Sans', sans-serif; }
 .face-dohyeon { font-family: 'Do Hyeon', sans-serif; }
@@ -283,7 +283,7 @@
 
 .panel__hint,
 .field__hint {
-  color: #c9c9c9;
+  color: var(--token-text-hint);
   font-size: 0.92rem;
 }
 
@@ -541,7 +541,7 @@
 
 .grade--S { background: var(--yellow); }
 .grade--A { background: var(--red); color: var(--white); }
-.grade--D { background: #3a3a3a; color: var(--white); }
+.grade--D { background: var(--token-grade-d-surface); color: var(--white); }
 
 .grade--big {
   font-size: clamp(4rem, 12vw, 7rem);
@@ -558,7 +558,7 @@
 .meter {
   display: block;
   height: 10px;
-  background: #333;
+  background: var(--token-meter-track-dark);
   transform: skewX(-20deg);
   overflow: hidden;
 }
@@ -580,7 +580,7 @@
 .segments span {
   width: 14px;
   height: 10px;
-  background: #ccc;
+  background: var(--token-meter-track-light);
   transform: skewX(-20deg);
 }
 
@@ -609,7 +609,7 @@
 }
 
 .p-dialog::backdrop {
-  background: repeating-linear-gradient(-60deg, rgb(229 25 28 / 0.55) 0 18px, rgb(0 0 0 / 0.8) 18px 36px);
+  background: repeating-linear-gradient(-60deg, rgb(var(--token-effect-red-rgb) / 0.55) 0 18px, rgb(var(--token-shadow-rgb) / 0.8) 18px 36px);
 }
 
 .p-dialog__title {

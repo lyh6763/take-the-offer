@@ -12,6 +12,30 @@
   --yellow: #f4d23c;
   --grey: #8f8f8f;
 
+  /* 용도별 색. 기존 팔레트와 값이 다른 흰색·검정·회색은 따로 둔다. */
+  --token-surface-disabled: #3a3a3a;
+  --token-text-disabled: #b8b8b8;
+  --token-ransom-paper: #fff;
+  --token-ransom-ink: #111;
+  --token-ransom-news-ink: #1a1a1a;
+  --token-text-hint: #c9c9c9;
+  --token-grade-d-surface: #3a3a3a;
+  --token-meter-track-dark: #333;
+  --token-meter-track-light: #ccc;
+  --token-text-on-light-muted: #444;
+  --token-text-on-light-secondary: #333;
+  --token-text-menu-note: #d9d9d9;
+  --token-text-recorder-interim: #9a9a9a;
+  --token-text-result-weakness: #d0d0d0;
+  --token-radar-ring: #444;
+  --token-radar-axis: #555;
+
+  /* 반투명 효과의 RGB 채널. rgb() 표기와 투명도는 사용처에서 유지한다. */
+  --token-effect-red-rgb: 229 25 28;
+  --token-effect-white-rgb: 255 255 255;
+  --token-shadow-rgb: 0 0 0;
+  --token-title-note-rgb: 13 13 13;
+
   --font-display: 'Black Han Sans', 'Anton', system-ui, sans-serif;
   --font-latin: 'Anton', 'Black Han Sans', Impact, sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', 'Noto Sans KR', system-ui, sans-serif;

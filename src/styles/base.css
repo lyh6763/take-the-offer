@@ -31,7 +31,7 @@ body::before {
   position: fixed;
   inset: -50%;
   z-index: -2;
-  background: repeating-conic-gradient(from 0deg at 50% 50%, rgb(229 25 28 / 0.22) 0deg 6deg, transparent 6deg 18deg);
+  background: repeating-conic-gradient(from 0deg at 50% 50%, rgb(var(--token-effect-red-rgb) / 0.22) 0deg 6deg, transparent 6deg 18deg);
   animation: rays-spin 120s linear infinite;
 }
 
@@ -41,9 +41,9 @@ body::after {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 80% 10%, rgb(229 25 28 / 0.35), transparent 45%),
-    radial-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1.4px) 0 0 / 10px 10px,
-    linear-gradient(transparent 60%, rgb(0 0 0 / 0.6));
+    radial-gradient(circle at 80% 10%, rgb(var(--token-effect-red-rgb) / 0.35), transparent 45%),
+    radial-gradient(rgb(var(--token-effect-white-rgb) / 0.08) 1px, transparent 1.4px) 0 0 / 10px 10px,
+    linear-gradient(transparent 60%, rgb(var(--token-shadow-rgb) / 0.6));
   pointer-events: none;
 }
 
