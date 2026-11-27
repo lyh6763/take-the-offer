@@ -1,3 +1,4 @@
+@layer components {
 /* ---------- 공통 화면 틀 ---------- */
 .screen {
   display: block;
@@ -1008,4 +1009,5 @@
   gap: 14px;
   align-content: start;
   justify-items: start;
+}
 }

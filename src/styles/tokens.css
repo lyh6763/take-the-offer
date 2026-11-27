@@ -1,3 +1,6 @@
+@layer reset, tokens, base, components, utilities;
+
+@layer tokens {
 /* TAKE THE OFFER — 디자인 토큰
    빨강·검정·흰색 세 색이 주인공. 빨강 바탕 위 글자는 흰색만(대비 5.0:1).
    어두운 바탕 위 작은 빨간 글씨는 --red-text(6.4:1)를 쓴다. */
@@ -58,4 +61,5 @@
   :root {
     --hud-h: 88px;
   }
+}
 }

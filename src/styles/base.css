@@ -1,3 +1,4 @@
+@layer reset {
 *,
 *::before,
 *::after {
@@ -5,6 +6,9 @@
   margin: 0;
   padding: 0;
 }
+}
+
+@layer base {
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -99,23 +103,6 @@ main:focus {
   border: 0;
 }
 
-.skip-link {
-  position: fixed;
-  top: 8px;
-  left: 8px;
-  z-index: 1000;
-  padding: 10px 16px;
-  background: var(--yellow);
-  color: var(--black);
-  font-weight: 700;
-  text-decoration: none;
-  transform: translateY(-160%);
-}
-
-.skip-link:focus {
-  transform: none;
-}
-
 /* 화면 전환: 새 화면이 사선으로 베어 들어온다 (View Transitions 지원 브라우저) */
 ::view-transition-old(root) {
   animation: 260ms var(--ease-out) both slash-out;
@@ -157,4 +144,25 @@ main:focus {
 [data-motion='reduce']::view-transition-old(root),
 [data-motion='reduce']::view-transition-new(root) {
   animation: none;
+}
+}
+
+@layer utilities {
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  padding: 10px 16px;
+  background: var(--yellow);
+  color: var(--black);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
 }
