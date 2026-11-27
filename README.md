@@ -34,7 +34,7 @@
 - 음성: Web Speech API(SpeechSynthesis, SpeechRecognition). 지원하지 않으면 텍스트 입력
 - 예고장: 배치(`layoutRansom`)는 순수 함수, 그리기(`drawRansom`)는 Canvas 2D ([src/lib/ransom.ts](src/lib/ransom.ts))
 - 글꼴: Fontsource 자체 호스팅. UI용 Black Han Sans·Anton만 첫 화면 CSS에 넣고, 예고장용 4종은 필요할 때 별도 CSS로 받음
-- 테스트: Vitest 31개 (답변 분석, 예고장 배치, 능력치 계산, 저장값·가져온 기록 파일 정리, 해시 라우팅)
+- 테스트: Vitest 41개 (답변 분석, 예고장 배치, 능력치 계산, 저장값·가져온 기록 파일 정리, 해시 라우팅, 스타일 검수 판정)
 - 린트: ESLint 9(typescript-eslint·react-hooks·jsx-a11y recommended, [eslint.config.js](eslint.config.js))와 Stylelint(recommended, [stylelint.config.js](stylelint.config.js)). 경고 0이어야 통과
 
 ## 스타일 구조
@@ -43,6 +43,24 @@
 - 순백색 예고장 종이(`#fff`)와 기존 UI의 흰색(`--white: #fafafa`)처럼 값이 다른 색은 구분합니다. 현재 값이 같아도 비활성 버튼·D등급 배경·차트 선처럼 역할이 다르면 각각의 토큰으로 관리합니다.
 - 반투명 효과는 `rgb(var(--token-effect-red-rgb) / 0.22)`처럼 RGB 채널 토큰을 사용하고, 투명도는 사용처에 둡니다. 효과용 빨강(`229 25 28`)은 기존 강조색(`--red: #d7191c`)과 다릅니다.
 - 색 토큰만 정리할 때는 기존 색상값과 `rgb()` 표기 방식을 유지합니다. 수정 전 기준을 두 번 수집한 뒤 전후 캡처·요소와 가상 요소의 계산된 색·키보드 포커스를 비교합니다.
+
+### 스타일 보존 검수
+
+`npm run qa:styles`는 원본 CSS를 Git에서 읽어 같은 프로세스의 Vite 서버와 헤드리스 Chromium으로 검사합니다. 이미 설치된 Playwright·axe-core를 사용하므로 해당 `node_modules`와 브라우저 캐시 경로를 지정합니다. 아래는 이 포트폴리오의 로컬 환경 예시입니다.
+
+```powershell
+$env:NODE_PATH = Join-Path $env:USERPROFILE 'duoback-fit\node_modules'
+$env:PLAYWRIGHT_BROWSERS_PATH = Join-Path $env:USERPROFILE 'AppData\Local\ms-playwright'
+npm run qa:styles -- baseline --dir .qa-results/작업명
+# CSS를 수정한 뒤 같은 기준으로 검사합니다.
+npm run qa:styles -- check --dir .qa-results/작업명
+```
+
+- 네 폭(1920·1440·768·375px)의 13개 화면·상태를 각각 수집합니다. 날짜·예시 데이터·무작위 배치·폰트를 고정하고 모션 줄이기 상태의 CSS 전환·유한 애니메이션을 끝 상태로 맞춥니다.
+- `baseline`은 원본을 두 번 수집해 재현성을 검사합니다. 통과한 첫 번째 수집을 이후 비교의 고정 기준으로 사용합니다. 기준 폴더·기존 수정본 기록은 덮어쓰지 않습니다.
+- 계산된 색·요소 위치와 크기·포커스 기록·접근성 결과는 일치를 요구합니다. 픽셀 편차는 150픽셀 이하이면서 전체의 0.02% 이하로 제한합니다. 엄격한 픽셀 일치 건수도 함께 기록하며, 허용 편차 통과를 픽셀 차이 0으로 표현하지 않습니다.
+- 정책·검수 코드·예시 데이터·Node·브라우저·잠금 파일의 버전과 해시를 기준에 남깁니다. 조건이 바뀌거나 원본 두 번의 재현성 검사가 실패하면 새 기준이 필요합니다. 추가 캡처를 골라 통과시키지 않습니다.
+- 모션을 켠 화면 이동·대화상자 Enter 열기·Escape 닫기·포커스 복귀를 별도 확인합니다. `.qa-results/`에는 원본 CSS·PNG·계산값·판정 결과가 남고 Git에는 포함되지 않습니다.
 
 ## 접근성
 
