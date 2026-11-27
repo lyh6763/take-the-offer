@@ -39,6 +39,8 @@
 
 ## 스타일 구조
 
+- 계층 순서는 `@layer reset, tokens, base, components, utilities;`이며 `tokens.css`에서 한 번 선언합니다. `base.css`의 기본 초기화는 `reset`, 기본 요소와 모션 규칙은 `base`, 본문 바로가기는 `utilities`에 둡니다.
+- `components.css`와 `screens.css`는 모두 `components` 계층에 두고 기존 파일 로드 순서를 유지합니다. 화면 스타일을 더 높은 별도 계층으로 옮기면 기존 선택자 우선순위가 바뀔 수 있기 때문입니다. `.visually-hidden`도 폼 스타일과의 기존 우선순위를 유지하도록 `base`에 둡니다.
 - `src/styles/tokens.css`: 기존 팔레트·글꼴·여백과 용도별 색 토큰(`--token-*`)을 정의합니다. `base.css`는 기본 요소·배경, `components.css`는 공통 UI, `screens.css`는 화면별 스타일을 맡습니다.
 - 순백색 예고장 종이(`#fff`)와 기존 UI의 흰색(`--white: #fafafa`)처럼 값이 다른 색은 구분합니다. 현재 값이 같아도 비활성 버튼·D등급 배경·차트 선처럼 역할이 다르면 각각의 토큰으로 관리합니다.
 - 반투명 효과는 `rgb(var(--token-effect-red-rgb) / 0.22)`처럼 RGB 채널 토큰을 사용하고, 투명도는 사용처에 둡니다. 효과용 빨강(`229 25 28`)은 기존 강조색(`--red: #d7191c`)과 다릅니다.
