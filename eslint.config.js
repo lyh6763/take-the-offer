@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint';
 // 구성은 같은 포트폴리오의 levis 저장소와 맞췄다.
 export default tseslint.config(
   {
-    ignores: ['dist', 'dist-*', '.vite', 'node_modules'],
+    ignores: ['dist', 'dist-*', '.vite', 'node_modules', '.qa-results'],
   },
   js.configs.recommended,
   tseslint.configs.recommended,
@@ -31,6 +31,13 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.flat.recommended.rules,
       ...jsxA11y.flatConfigs.recommended.rules,
+    },
+  },
+  {
+    // 검수 스크립트는 Node와 page.evaluate의 브라우저 문맥에서 실행한다.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
     },
   },
   {

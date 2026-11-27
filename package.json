@@ -9,6 +9,7 @@
     "test": "vitest run",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
+    "qa:styles": "node scripts/style-qa.mjs",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint . --max-warnings 0",
     "lint:css": "stylelint \"src/**/*.css\" --max-warnings 0 --cache --cache-location node_modules/.cache/stylelint/"
